@@ -381,6 +381,26 @@
       color: var(--text-secondary);
     }
 
+    .badge-text.highlight {
+      color: #00ff88;
+      font-weight: 600;
+      text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+    }
+
+    .badge-text.ave-highlight {
+      background: linear-gradient(135deg, #00ff88, #00cc6a);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 700;
+    }
+
+    .badge-img {
+      width: 16px;
+      height: 16px;
+      vertical-align: middle;
+    }
+
     .cert-info {
       text-align: center;
       margin-top: 10px;
@@ -756,19 +776,19 @@
           <div class="security-badges">
             <div class="security-badge">
               <span class="badge-icon">🛡️</span>
-              <span class="badge-text">合约审计</span>
+              <span class="badge-text highlight">合约审计</span>
             </div>
             <div class="security-badge">
-              <span class="badge-icon">✅</span>
-              <span class="badge-text">AVE认证</span>
+              <span class="badge-icon"><img src="avedex_mobile_logo.654ecc49.png" class="badge-img" alt="AVE"></span>
+              <span class="badge-text ave-highlight">AVE认证</span>
             </div>
             <div class="security-badge">
-              <span class="badge-icon">🔐</span>
-              <span class="badge-text">链上验证</span>
+              <span class="badge-icon"><img src="95d3d4c4-927e-4ce8-bed9-bb2becf78a06.png" class="badge-img" alt="链上验证"></span>
+              <span class="badge-text highlight">链上验证</span>
             </div>
             <div class="security-badge">
-              <span class="badge-icon">⚡</span>
-              <span class="badge-text">官方授权</span>
+              <span class="badge-icon"><img src="Token-Pocket-Color-Version04.png" class="badge-img" alt="官方授权"></span>
+              <span class="badge-text highlight">官方授权</span>
             </div>
           </div>
           <div class="cert-info">
